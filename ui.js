@@ -5,10 +5,12 @@ var setRegion=0;
 
 var sections = new Array();
 
-function Section(UIregion, sound)  {
+function Section(UIregion, sound,children,weights)  {
   this.UIregion = UIregion;
   this.sound = sound;
-  this.color = "rgb(50,50,50)"
+  this.color = "rgb(50,50,50)";
+  this.children = new Array();
+  this.weights = new Array();
 }
 
 

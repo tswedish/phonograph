@@ -78,9 +78,13 @@ function queueTrack(newTrackIndex){
 }
 
 function resetSectionColor ()  {
+  console.log(currentTrackIndex);
+  console.log(nextTrackIndex);
   for (var i = 0;i<sections.length;i++)  {
     if (i != nextTrackIndex && i != currentTrackIndex) {
       sections[i].color = "rgb(50,50,50)";
+    } else if (i == currentTrackIndex && i == nextTrackIndex) {
+      sections[i].color = "rgb(100,100,0)";
     } else if (i == currentTrackIndex) {
       sections[i].color = "rgb(0,100,0)";
     } else if (i == nextTrackIndex)  {
