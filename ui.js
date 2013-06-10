@@ -8,6 +8,7 @@ var sections = new Array();
 function Section(UIregion, sound)  {
   this.UIregion = UIregion;
   this.sound = sound;
+  this.color = "rgb(50,50,50)"
 }
 
 
@@ -16,12 +17,13 @@ function startControl() {
   ctx = c.getContext("2d");
   console.log(filelist);
   for(var i = 0; i < currentBufferList.length;i++) {
-    var region = [50+i*160,50,150,75];
+    var region = [i*160,0,150,75];
     ctx.fillStyle="rgb(50,50,50)";
-    ctx.fillRect(50+i*160,50,150,75);
+    ctx.fillRect(i*160,0,150,75);
     sections[i] = new Section(region,currentBufferList[i]);
   }
 
+  /*
   c.addEventListener("mousedown", function(e){
     for(var i = 0; i<sections.length;i++) {
       if(inRegion(sections[i].UIregion,e))  {
@@ -30,14 +32,12 @@ function startControl() {
     }
     startdown = true;
   }, false);
-  /*
   c.addEventListener("mousemove", function(e){
     console.log('mouse move');
     if (startdown)  {
       updateSectionRegion(e);
     }
   }, false);
-  */
   c.addEventListener("mouseup", function(e){
     if(inRegion(sections[setRegion].UIregion,e))  {
       console.log('clicked rectangle '+(setRegion+1));
@@ -46,6 +46,16 @@ function startControl() {
     //setRegion = null;
     startdown = false;
   }, false);
+  */
+  c.addEventListener("click",function(e)  {
+     console.log("click");
+     for(var i = 0; i<sections.length;i++) {
+      if(inRegion(sections[i].UIregion,e))  {
+        queueTrack(i);
+      }
+    }
+  }, false);
+
 
   animate();
 
@@ -74,7 +84,7 @@ window.requestAnimFrame = (function(callback) {
   window.oRequestAnimationFrame ||
   window.msRequestAnimationFrame ||
   function(callback) {
-    window.setTimeout(callback, 1000 / 60);
+    window.setTimeout(callback, 1000 / 20);
   };
 })();
 
@@ -93,8 +103,8 @@ function animate() {
                   sections[i].UIregion[0],
                   sections[i].UIregion[1]
                  ];
-    ctx.fillStyle="rgb(50,50,50)";
-    ctx.fillRect(region[0]-50,region[1]-50,150,75);
+    ctx.fillStyle=sections[i].color;
+    ctx.fillRect(region[0],region[1],150,75);
   }
 
 

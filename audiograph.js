@@ -12,8 +12,9 @@ var currentBufferList;
 window.onload = init;
 var context;
 var bufferLoader;
-var nextTrack = null;
+var nextTrackIndex = null;
 var playing = false;
+var currentTrackIndex = null;
 
 
 function init() {
@@ -49,26 +50,42 @@ function playTrack(buffer){
         //filter.connect(context.destination);
         source.connect(context.destination);
         source.noteOn(0);
-        nextTrack = null;
+        currentTrackIndex = nextTrackIndex;
+        nextTrackIndex = null;
+        resetSectionColor();
         playing = true;
         var timer = setTimeout(function() {
           console.log('playback finished');
           playing = false;
+          sections[currentTrackIndex].color = "rgb(50,50,50)";
           playNextinQueue();
         }, buffer.duration * 1000);
 }
 
 function playNextinQueue()  {
-  if(nextTrack != null) {
-    playTrack(nextTrack);
+  if(nextTrackIndex != null) {
+    playTrack(sections[nextTrackIndex].sound);
   }
  }
 
-function queueTrack(newBuffer){
-  nextTrack = newBuffer;
+function queueTrack(newTrackIndex){
+  nextTrackIndex = newTrackIndex;
+  resetSectionColor();
   console.log('queued next track');
   if(!playing) {
     playNextinQueue();
+  }
+}
+
+function resetSectionColor ()  {
+  for (var i = 0;i<sections.length;i++)  {
+    if (i != nextTrackIndex && i != currentTrackIndex) {
+      sections[i].color = "rgb(50,50,50)";
+    } else if (i == currentTrackIndex) {
+      sections[i].color = "rgb(0,100,0)";
+    } else if (i == nextTrackIndex)  {
+      sections[i].color = "rgb(100,0,0)";
+    }
   }
 }
 
