@@ -1,0 +1,44 @@
+[
+    {
+        "UIregion": [
+            643,
+            350,
+            150,
+            75
+        ],
+        "soundIndex": 0,
+        "name": "loop1.wav",
+        "color": "rgb(50,50,50)",
+        "children": [],
+        "weights": [],
+        "weightTotal": 0
+    },
+    {
+        "UIregion": [
+            428,
+            474,
+            150,
+            75
+        ],
+        "soundIndex": 1,
+        "name": "loop2.wav",
+        "color": "rgb(50,50,50)",
+        "children": [],
+        "weights": [],
+        "weightTotal": 0
+    },
+    {
+        "UIregion": [
+            428,
+            226,
+            150,
+            75
+        ],
+        "soundIndex": 2,
+        "name": "loop3.wav",
+        "color": "rgb(50,50,50)",
+        "children": [],
+        "weights": [],
+        "weightTotal": 0
+    }
+]
