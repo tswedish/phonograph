@@ -38,20 +38,20 @@ function finishedLoading(bufferList) {
   startControl();
 }
 
-
-function playTrack(buffer){
-        console.log('playing next track');
-        var source = context.createBufferSource();
-        source.buffer = buffer;
         //var filter = context.createBiquadFilter();
         //filter.type = 0;  // In this case it's a lowshelf filter
         //filter.frequency.value = 440;
         //source.connect(filter);
         //filter.connect(context.destination);
+
+function playTrack(buffer){
+        console.log('playing next track');
+        var source = context.createBufferSource();
+        source.buffer = buffer;
         source.connect(context.destination);
         source.noteOn(0);
         currentTrackIndex = nextTrackIndex;
-        nextTrackIndex = null;
+        nextTrackIndex = rollNextTrack();
         resetSectionColor();
         playing = true;
         var timer = setTimeout(function() {
@@ -60,6 +60,22 @@ function playTrack(buffer){
           sections[currentTrackIndex].color = "rgb(50,50,50)";
           playNextinQueue();
         }, buffer.duration * 1000);
+}
+
+function rollNextTrack()  {
+  var roll = Math.round(Math.random()
+      *(sections[currentTrackIndex].weightTotal-1));
+  console.log("weightTotal:"+sections[currentTrackIndex].weightTotal);
+  console.log("rolled: " +roll);
+  for (var i = 0; i < sections[currentTrackIndex].weights.length;i++)  {
+    if (roll < sections[currentTrackIndex].weights[i]) {
+      return sections[currentTrackIndex].children[i];
+    } else  {
+      roll = roll - sections[currentTrackIndex].weights[i];
+    }
+  }
+  console.log("No roll, returning null");
+  return null;
 }
 
 function playNextinQueue()  {
@@ -84,11 +100,11 @@ function resetSectionColor ()  {
     if (i != nextTrackIndex && i != currentTrackIndex) {
       sections[i].color = "rgb(50,50,50)";
     } else if (i == currentTrackIndex && i == nextTrackIndex) {
-      sections[i].color = "rgb(100,100,0)";
+      sections[i].color = "rgb(200,100,0)";
     } else if (i == currentTrackIndex) {
-      sections[i].color = "rgb(0,100,0)";
+      sections[i].color = "rgb(0,200,0)";
     } else if (i == nextTrackIndex)  {
-      sections[i].color = "rgb(100,0,0)";
+      sections[i].color = "rgb(200,0,0)";
     }
   }
 }

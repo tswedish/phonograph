@@ -1,7 +1,7 @@
 var c;
 var ctx;
 var startdown = false;
-var setRegion=0;
+var selectedRegion=0;
 
 var sections = new Array();
 
@@ -11,6 +11,7 @@ function Section(UIregion, sound,children,weights)  {
   this.color = "rgb(50,50,50)";
   this.children = new Array();
   this.weights = new Array();
+  this.weightTotal = 0;
 }
 
 
@@ -19,49 +20,68 @@ function startControl() {
   ctx = c.getContext("2d");
   console.log(filelist);
   for(var i = 0; i < currentBufferList.length;i++) {
-    var region = [i*160,0,150,75];
+    var region = [0,i*80,150,75];
     ctx.fillStyle="rgb(50,50,50)";
-    ctx.fillRect(i*160,0,150,75);
+    ctx.fillRect(region[0]+50,region[1],region[2]-50,region[3]);
+    ctx.fillRect(region[0],region[1]+20,region[2]+25,region[3]-20);
     sections[i] = new Section(region,currentBufferList[i]);
   }
 
-  /*
+  // Drag logic
   c.addEventListener("mousedown", function(e){
     for(var i = 0; i<sections.length;i++) {
       if(inRegion(sections[i].UIregion,e))  {
-        setRegion = i;
+        selectedRegion = i;
       }
     }
-    startdown = true;
   }, false);
+  /*
   c.addEventListener("mousemove", function(e){
-    console.log('mouse move');
-    if (startdown)  {
-      updateSectionRegion(e);
-    }
-  }, false);
-  c.addEventListener("mouseup", function(e){
-    if(inRegion(sections[setRegion].UIregion,e))  {
-      console.log('clicked rectangle '+(setRegion+1));
-      queueTrack(currentBufferList[setRegion]);
-    }
-    //setRegion = null;
-    startdown = false;
+    //console.log('mouse move');
   }, false);
   */
-  c.addEventListener("click",function(e)  {
+  c.addEventListener("mouseup", function(e){
+    var childSet = false;
+    if(inRegion(sections[selectedRegion].UIregion,e))  {
      console.log("click");
-     for(var i = 0; i<sections.length;i++) {
-      if(inRegion(sections[i].UIregion,e))  {
-        queueTrack(i);
+     queueTrack(selectedRegion);
+
+    } else  {
+      for(var i = 0; i<sections.length;i++) {
+        if(inRegion(sections[i].UIregion,e))  {
+          connectChild(selectedRegion,i);
+          childSet = true;
+        }
+      }
+      if (!childSet)  {
+        nextTrackIndex = null;
+        resetSectionColor();
       }
     }
+    //setRegion = null;
+    dragged = true;
   }, false);
 
 
   animate();
 
 
+}
+
+function connectChild(origin, destination)  {
+  if(sections[origin].children.indexOf(destination) < 0)  {
+    sections[origin].children[sections[origin].children.length] = destination;
+    // weight strength defaults to 1 (uniform distribution)
+    sections[origin].weights[sections[origin].weights.length] = 1;
+  } else {
+    sections[origin].weights[sections[origin].children.indexOf(destination)]
+      += 1;
+  }
+  var total = 0;
+  for (var i = 0; i < sections[origin].weights.length;i++) {
+    total += sections[origin].weights[i];
+  }
+  sections[origin].weightTotal = total;
 }
 
 function updateSectionRegion(e)  {
@@ -101,12 +121,27 @@ function animate() {
 
   // draw stuff
   for (var i=0;i<sections.length;i++) {
-    var region = [
-                  sections[i].UIregion[0],
-                  sections[i].UIregion[1]
-                 ];
+    var region = sections[i].UIregion;
     ctx.fillStyle=sections[i].color;
-    ctx.fillRect(region[0],region[1],150,75);
+    ctx.fillRect(region[0]+25,region[1],region[2]-50,region[3]);
+    ctx.fillStyle="rgb(100,100,100)";
+    ctx.fillRect(region[0],region[1]+15,25,region[3]-30);
+    ctx.fillRect(region[2]-25,region[1]+15,25,region[3]-30);
+  }
+
+  for (var i=0;i<sections.length;i++) {
+    var region = sections[i].UIregion;
+    for (var j = 0; j < sections[i].children.length;j++)  {
+      var childRegion = sections[sections[i].children[j]].UIregion;
+      var strokeWeight = sections[i].weights[j]/sections[i].weightTotal;
+      strokeWeight = Math.round(strokeWeight*180);
+      ctx.beginPath();
+      ctx.moveTo(region[0]+12,region[1]+25);
+      ctx.lineTo(childRegion[2]-12,childRegion[1]+25);
+      ctx.strokeStyle="rgb(" + strokeWeight + ",0,"+ (180-strokeWeight)+")"
+      ctx.stroke();
+    }
+
   }
 
 
