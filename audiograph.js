@@ -100,11 +100,11 @@ function resetSectionColor ()  {
     if (i != nextTrackIndex && i != currentTrackIndex) {
       sections[i].color = "rgb(50,50,50)";
     } else if (i == currentTrackIndex && i == nextTrackIndex) {
-      sections[i].color = "rgb(200,100,0)";
+      sections[i].color = "rgb(150,100,0)";
     } else if (i == currentTrackIndex) {
-      sections[i].color = "rgb(0,200,0)";
+      sections[i].color = "rgb(0,150,0)";
     } else if (i == nextTrackIndex)  {
-      sections[i].color = "rgb(200,0,0)";
+      sections[i].color = "rgb(150,0,0)";
     }
   }
 }

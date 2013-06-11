@@ -5,7 +5,7 @@ var selectedRegion=0;
 
 var sections = new Array();
 
-function Section(UIregion, sound,children,weights)  {
+function Section(UIregion, sound)  {
   this.UIregion = UIregion;
   this.sound = sound;
   this.color = "rgb(50,50,50)";
@@ -20,7 +20,13 @@ function startControl() {
   ctx = c.getContext("2d");
   console.log(filelist);
   for(var i = 0; i < currentBufferList.length;i++) {
-    var region = [0,i*80,150,75];
+    var numSections = currentBufferList.length;
+    // What good is memorizing PI if I use tau?
+    var radius = 2*(numSections*150)/(2*3.141592653);
+    var center = [c.width/2, c.height/2];
+    var angle = i*((2*3.1415926)/numSections);
+    var region = [Math.round(radius*Math.cos(angle)+center[0]),
+                  Math.round(radius*Math.sin(angle)+center[1]),150,75];
     //ctx.fillStyle="rgb(50,50,50)";
     //ctx.fillRect(region[0]+50,region[1],region[2]-50,region[3]);
     //ctx.fillRect(region[0],region[1]+20,region[2]+25,region[3]-20);
@@ -111,13 +117,14 @@ window.requestAnimFrame = (function(callback) {
 })();
 
 function animate() {
-  var canvas = document.getElementById('control_surface');
-  var context = canvas.getContext('2d');
+
+  c = document.getElementById("control_surface");
+  ctx = c.getContext("2d");
 
   // update
 
   // clear
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, c.width, c.height);
 
   // draw stuff
   for (var i=0;i<sections.length;i++) {
@@ -126,7 +133,7 @@ function animate() {
     ctx.fillRect(region[0]+25,region[1],region[2]-50,region[3]);
     ctx.fillStyle="rgb(100,100,100)";
     ctx.fillRect(region[0],region[1]+15,25,region[3]-30);
-    ctx.fillRect(region[2]-25,region[1]+15,25,region[3]-30);
+    ctx.fillRect(region[0]+region[2]-25,region[1]+15,25,region[3]-30);
   }
 
   for (var i=0;i<sections.length;i++) {
@@ -138,7 +145,7 @@ function animate() {
       ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(childRegion[0]+12,childRegion[1]+25);
-      ctx.lineTo(region[2]-12,region[1]+25);
+      ctx.lineTo(region[0]+region[2]-12,region[1]+25);
       ctx.strokeStyle="rgb(" + strokeWeight + ",0,"+ (180-strokeWeight)+")"
       ctx.stroke();
     }
