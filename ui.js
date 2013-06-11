@@ -21,9 +21,9 @@ function startControl() {
   console.log(filelist);
   for(var i = 0; i < currentBufferList.length;i++) {
     var region = [0,i*80,150,75];
-    ctx.fillStyle="rgb(50,50,50)";
-    ctx.fillRect(region[0]+50,region[1],region[2]-50,region[3]);
-    ctx.fillRect(region[0],region[1]+20,region[2]+25,region[3]-20);
+    //ctx.fillStyle="rgb(50,50,50)";
+    //ctx.fillRect(region[0]+50,region[1],region[2]-50,region[3]);
+    //ctx.fillRect(region[0],region[1]+20,region[2]+25,region[3]-20);
     sections[i] = new Section(region,currentBufferList[i]);
   }
 
@@ -135,6 +135,7 @@ function animate() {
       var childRegion = sections[sections[i].children[j]].UIregion;
       var strokeWeight = sections[i].weights[j]/sections[i].weightTotal;
       strokeWeight = Math.round(strokeWeight*180);
+      ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(childRegion[0]+12,childRegion[1]+25);
       ctx.lineTo(region[2]-12,region[1]+25);
