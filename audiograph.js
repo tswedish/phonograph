@@ -3,7 +3,10 @@ var filelist = [
                 'loop2.wav',
                 'loop3.wav'
                 ];
+
+var filename = new Array();
 for (var i = 0; i < filelist.length; i++) {
+  filename[i] = filelist[i];
   filelist[i] = 'http://localhost:8000/'+filelist[i];
 }
 

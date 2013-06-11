@@ -5,9 +5,10 @@ var selectedRegion=0;
 
 var sections = new Array();
 
-function Section(UIregion, sound)  {
+function Section(UIregion, sound,name)  {
   this.UIregion = UIregion;
   this.sound = sound;
+  this.name = name;
   this.color = "rgb(50,50,50)";
   this.children = new Array();
   this.weights = new Array();
@@ -27,10 +28,7 @@ function startControl() {
     var angle = i*((2*3.1415926)/numSections);
     var region = [Math.round(radius*Math.cos(angle)+center[0]),
                   Math.round(radius*Math.sin(angle)+center[1]),150,75];
-    //ctx.fillStyle="rgb(50,50,50)";
-    //ctx.fillRect(region[0]+50,region[1],region[2]-50,region[3]);
-    //ctx.fillRect(region[0],region[1]+20,region[2]+25,region[3]-20);
-    sections[i] = new Section(region,currentBufferList[i]);
+    sections[i] = new Section(region,currentBufferList[i],filename[i]);
   }
 
   // Drag logic
@@ -125,13 +123,19 @@ function animate() {
 
   // clear
   ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = "rgb(100,100,100)";
+  ctx.fillRect(0,0,c.width,c.height);
+
 
   // draw stuff
   for (var i=0;i<sections.length;i++) {
     var region = sections[i].UIregion;
     ctx.fillStyle=sections[i].color;
     ctx.fillRect(region[0]+25,region[1],region[2]-50,region[3]);
-    ctx.fillStyle="rgb(100,100,100)";
+    ctx.fillStyle="rgb(150,150,150)";
+    ctx.font = "14pt Calibri";
+    ctx.fillText(sections[i].name,region[0]+30,region[1]+40);
+    ctx.fillStyle="rgb(75,75,75)";
     ctx.fillRect(region[0],region[1]+15,25,region[3]-30);
     ctx.fillRect(region[0]+region[2]-25,region[1]+15,25,region[3]-30);
   }
