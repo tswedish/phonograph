@@ -3,11 +3,9 @@ var ctx;
 var startdown = false;
 var selectedRegion=0;
 
-var sections = new Array();
-
-function Section(UIregion, sound,name)  {
+function Section(UIregion, soundIndex,name)  {
   this.UIregion = UIregion;
-  this.sound = sound;
+  this.soundIndex = soundIndex;
   this.name = name;
   this.color = "rgb(50,50,50)";
   this.children = new Array();
@@ -16,25 +14,17 @@ function Section(UIregion, sound,name)  {
 }
 
 
-function startControl() {
+function startControl(loadedComposition) {
   c = document.getElementById("control_surface");
   ctx = c.getContext("2d");
-  console.log(filelist);
-  for(var i = 0; i < currentBufferList.length;i++) {
-    var numSections = currentBufferList.length;
-    // What good is memorizing PI if I use tau?
-    var radius = 2*(numSections*150)/(2*3.141592653);
-    var center = [c.width/2, c.height/2];
-    var angle = i*((2*3.1415926)/numSections);
-    var region = [Math.round(radius*Math.cos(angle)+center[0]),
-                  Math.round(radius*Math.sin(angle)+center[1]),150,75];
-    sections[i] = new Section(region,currentBufferList[i],filename[i]);
+  if(!loadedComposition)  {
+    generateComposition;
   }
 
   // Drag logic
   c.addEventListener("mousedown", function(e){
-    for(var i = 0; i<sections.length;i++) {
-      if(inRegion(sections[i].UIregion,e))  {
+    for(var i = 0; i<composition.length;i++) {
+      if(inRegion(composition[i].UIregion,e))  {
         selectedRegion = i;
       }
     }
@@ -46,13 +36,13 @@ function startControl() {
   */
   c.addEventListener("mouseup", function(e){
     var childSet = false;
-    if(inRegion(sections[selectedRegion].UIregion,e))  {
+    if(inRegion(composition[selectedRegion].UIregion,e))  {
      console.log("click");
      queueTrack(selectedRegion);
 
     } else  {
-      for(var i = 0; i<sections.length;i++) {
-        if(inRegion(sections[i].UIregion,e))  {
+      for(var i = 0; i<composition.length;i++) {
+        if(inRegion(composition[i].UIregion,e))  {
           connectChild(selectedRegion,i);
           childSet = true;
         }
@@ -72,25 +62,41 @@ function startControl() {
 
 }
 
+function generateComposition()  {
+
+  console.log(filename);
+  for(var i = 0; i < trackBufferList.length;i++) {
+    var numSections = trackBufferList.length;
+    // What good is memorizing PI if I use tau?
+    var radius = 2*(numSections*150)/(2*3.141592653);
+    var center = [c.width/2, c.height/2];
+    var angle = i*((2*3.1415926)/numSections);
+    var region = [Math.round(radius*Math.cos(angle)+center[0]),
+                  Math.round(radius*Math.sin(angle)+center[1]),150,75];
+    composition[i] = new Section(region,i,filename[i]);
+  }
+}
+
+
 function connectChild(origin, destination)  {
-  if(sections[origin].children.indexOf(destination) < 0)  {
-    sections[origin].children[sections[origin].children.length] = destination;
+  if(composition[origin].children.indexOf(destination) < 0)  {
+    composition[origin].children[composition[origin].children.length] = destination;
     // weight strength defaults to 1 (uniform distribution)
-    sections[origin].weights[sections[origin].weights.length] = 1;
+    composition[origin].weights[composition[origin].weights.length] = 1;
   } else {
-    sections[origin].weights[sections[origin].children.indexOf(destination)]
+    composition[origin].weights[composition[origin].children.indexOf(destination)]
       += 1;
   }
   var total = 0;
-  for (var i = 0; i < sections[origin].weights.length;i++) {
-    total += sections[origin].weights[i];
+  for (var i = 0; i < composition[origin].weights.length;i++) {
+    total += composition[origin].weights[i];
   }
-  sections[origin].weightTotal = total;
+  composition[origin].weightTotal = total;
 }
 
 function updateSectionRegion(e)  {
-  sections[setRegion].UIregion[0] = e.pageX;
-  sections[setRegion].UIregion[1] = e.pageY;
+  composition[setRegion].UIregion[0] = e.pageX;
+  composition[setRegion].UIregion[1] = e.pageY;
 }
 
 function inRegion(region,e)  {
@@ -128,23 +134,23 @@ function animate() {
 
 
   // draw stuff
-  for (var i=0;i<sections.length;i++) {
-    var region = sections[i].UIregion;
-    ctx.fillStyle=sections[i].color;
+  for (var i=0;i<composition.length;i++) {
+    var region = composition[i].UIregion;
+    ctx.fillStyle=composition[i].color;
     ctx.fillRect(region[0]+25,region[1],region[2]-50,region[3]);
     ctx.fillStyle="rgb(150,150,150)";
     ctx.font = "14pt Calibri";
-    ctx.fillText(sections[i].name,region[0]+30,region[1]+40);
+    ctx.fillText(composition[i].name,region[0]+30,region[1]+40);
     ctx.fillStyle="rgb(75,75,75)";
     ctx.fillRect(region[0],region[1]+15,25,region[3]-30);
     ctx.fillRect(region[0]+region[2]-25,region[1]+15,25,region[3]-30);
   }
 
-  for (var i=0;i<sections.length;i++) {
-    var region = sections[i].UIregion;
-    for (var j = 0; j < sections[i].children.length;j++)  {
-      var childRegion = sections[sections[i].children[j]].UIregion;
-      var strokeWeight = sections[i].weights[j]/sections[i].weightTotal;
+  for (var i=0;i<composition.length;i++) {
+    var region = composition[i].UIregion;
+    for (var j = 0; j < composition[i].children.length;j++)  {
+      var childRegion = composition[composition[i].children[j]].UIregion;
+      var strokeWeight = composition[i].weights[j]/composition[i].weightTotal;
       strokeWeight = Math.round(strokeWeight*180);
       ctx.lineWidth = 5;
       ctx.beginPath();

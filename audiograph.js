@@ -1,16 +1,9 @@
-var filelist = [
-                'loop1.wav',
-                'loop2.wav',
-                'loop3.wav'
-                ];
-
 var filename = new Array();
-for (var i = 0; i < filelist.length; i++) {
-  filename[i] = filelist[i];
-  filelist[i] = 'http://localhost:8000/'+filelist[i];
-}
+// to generate: JSON.stringify(composition, null, 4);
+compositionFile = 'http://localhost:8000/composition.json';
 
-var currentBufferList;
+var trackBufferList;
+var composition = new Array();
 
 window.onload = init;
 var context;
@@ -25,20 +18,40 @@ function init() {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   context = new AudioContext();
 
+  compositionLoader = new CompositionLoader(
+      finishedLoadingComposition
+      );
+  compositionLoader.load(compositionFile);
+
+
+ }
+
+function finishedLoadingSound(bufferList) {
+  console.log('loadedbuffers');
+  trackBufferList = bufferList;
+  currBuffer = trackBufferList[0];
+  startControl(true);
+}
+
+function finishedLoadingComposition(composer)  {
+  console.log('loaded Composition');
+  composition = composer;
+  var filelist = new Array();
+  for(var i = 0;i<composition.length;i++) {
+    filelist[i] = composition[i].name;
+  }
+  for (var i = 0; i < filelist.length; i++) {
+    filename[i] = filelist[i];
+    filelist[i] = 'http://localhost:8000/'+filelist[i];
+  }
   bufferLoader = new BufferLoader(
     context,
     filelist,
-    finishedLoading
+    finishedLoadingSound
     );
 
   bufferLoader.load();
-}
 
-function finishedLoading(bufferList) {
-  console.log('loadedbuffers');
-  currentBufferList = bufferList;
-  currBuffer = currentBufferList[0];
-  startControl();
 }
 
         //var filter = context.createBiquadFilter();
@@ -60,21 +73,21 @@ function playTrack(buffer){
         var timer = setTimeout(function() {
           console.log('playback finished');
           playing = false;
-          sections[currentTrackIndex].color = "rgb(50,50,50)";
+          composition[currentTrackIndex].color = "rgb(50,50,50)";
           playNextinQueue();
         }, buffer.duration * 1000);
 }
 
 function rollNextTrack()  {
   var roll = Math.round(Math.random()
-      *(sections[currentTrackIndex].weightTotal-1));
-  console.log("weightTotal:"+sections[currentTrackIndex].weightTotal);
+      *(composition[currentTrackIndex].weightTotal-1));
+  console.log("weightTotal:"+composition[currentTrackIndex].weightTotal);
   console.log("rolled: " +roll);
-  for (var i = 0; i < sections[currentTrackIndex].weights.length;i++)  {
-    if (roll < sections[currentTrackIndex].weights[i]) {
-      return sections[currentTrackIndex].children[i];
+  for (var i = 0; i < composition[currentTrackIndex].weights.length;i++)  {
+    if (roll < composition[currentTrackIndex].weights[i]) {
+      return composition[currentTrackIndex].children[i];
     } else  {
-      roll = roll - sections[currentTrackIndex].weights[i];
+      roll = roll - composition[currentTrackIndex].weights[i];
     }
   }
   console.log("No roll, returning null");
@@ -83,7 +96,7 @@ function rollNextTrack()  {
 
 function playNextinQueue()  {
   if(nextTrackIndex != null) {
-    playTrack(sections[nextTrackIndex].sound);
+    playTrack(trackBufferList[composition[nextTrackIndex].soundIndex]);
   }
  }
 
@@ -99,17 +112,39 @@ function queueTrack(newTrackIndex){
 function resetSectionColor ()  {
   console.log(currentTrackIndex);
   console.log(nextTrackIndex);
-  for (var i = 0;i<sections.length;i++)  {
+  for (var i = 0;i<composition.length;i++)  {
     if (i != nextTrackIndex && i != currentTrackIndex) {
-      sections[i].color = "rgb(50,50,50)";
+      composition[i].color = "rgb(50,50,50)";
     } else if (i == currentTrackIndex && i == nextTrackIndex) {
-      sections[i].color = "rgb(150,100,0)";
+      composition[i].color = "rgb(150,100,0)";
     } else if (i == currentTrackIndex) {
-      sections[i].color = "rgb(0,150,0)";
+      composition[i].color = "rgb(0,150,0)";
     } else if (i == nextTrackIndex)  {
-      sections[i].color = "rgb(150,0,0)";
+      composition[i].color = "rgb(150,0,0)";
     }
   }
+}
+
+function CompositionLoader(callback) {
+  this.onload = callback;
+}
+
+CompositionLoader.prototype.load = function(url) {
+  // Load buffer asynchronously
+  var request = new XMLHttpRequest();
+  request.open("GET", url, true);
+
+  var loader = this;
+  request.onload = function() {
+      loader.onload(eval(request.response));
+  }
+
+
+  request.onerror = function() {
+    alert('CompositionLoader: XHR error');
+  }
+
+  request.send();
 }
 
 
