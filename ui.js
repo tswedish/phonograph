@@ -136,8 +136,8 @@ function animate() {
       var strokeWeight = sections[i].weights[j]/sections[i].weightTotal;
       strokeWeight = Math.round(strokeWeight*180);
       ctx.beginPath();
-      ctx.moveTo(region[0]+12,region[1]+25);
-      ctx.lineTo(childRegion[2]-12,childRegion[1]+25);
+      ctx.moveTo(childRegion[0]+12,childRegion[1]+25);
+      ctx.lineTo(region[2]-12,region[1]+25);
       ctx.strokeStyle="rgb(" + strokeWeight + ",0,"+ (180-strokeWeight)+")"
       ctx.stroke();
     }
