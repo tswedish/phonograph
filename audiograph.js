@@ -1,6 +1,8 @@
 var filename = new Array();
 // to generate: JSON.stringify(composition, null, 4);
-compositionFile = 'http://localhost:8000/composition.json';
+//compositionFile = 'http://localhost:8000/composition.json';
+var domainPrefix = '';
+var compositionFile = domainPrefix+'composition.json';
 
 var trackBufferList;
 var composition = new Array();
@@ -15,6 +17,7 @@ var currentTrackIndex = null;
 
 function init() {
   // Fix up prefixing
+  domainPrefix = document.URL;
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   context = new AudioContext();
 
@@ -42,7 +45,7 @@ function finishedLoadingComposition(composer)  {
   }
   for (var i = 0; i < filelist.length; i++) {
     filename[i] = filelist[i];
-    filelist[i] = 'http://localhost:8000/'+filelist[i];
+    filelist[i] = domainPrefix+filelist[i];
   }
   bufferLoader = new BufferLoader(
     context,
@@ -79,7 +82,7 @@ function playTrack(buffer){
 }
 
 function rollNextTrack()  {
-  var roll = Math.round(Math.random()
+  var roll = Math.ceil(Math.random()
       *(composition[currentTrackIndex].weightTotal-1));
   console.log("weightTotal:"+composition[currentTrackIndex].weightTotal);
   console.log("rolled: " +roll);
