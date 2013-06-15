@@ -116,6 +116,7 @@ function inRegion(region, e) {
 function runPhysics() {
   for (var i = 0; i < composition.length; i++) {
     var region = composition[i].UIregion;
+    var parentVec = $V([region[0],-region[1]]);
     var force = $V([0,0]);
     for (var j = 0; j < composition[i].children.length; j++) {
       var childRegion = composition[composition[i].children[j]].UIregion;
@@ -124,31 +125,45 @@ function runPhysics() {
       strokeWeight = Math.round(strokeWeight * 180);
       // Convert to Cartesian
       var childVec = $V([childRegion[0],-childRegion[1]]);
-      var parentVec = $V([region[0],-region[1]]);
       var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
       // Hooke's Law
-      var k = 0.001*strokeWeight;
+      var k = 0.0001*strokeWeight;
       var x = parentVec.distanceFrom(childVec) - 200;
       force = force.add(u2ChildVec.x(k*x));
     }
-      // Damping (replace's friction?)
-      var vel = $V(composition[i].velocity);
-      vel.setElements([vel.e(1), -vel.e(2)]);
-      force = force.add(vel.x(-0.1));
-      // Static Friction
-      if (force.modulus() > 0.01) {
-          force = force.add(force.toUnitVector().x(-0.01));
-      } else  {
-          force = force.x(0);
+    // Charge
+    for (var j = 0; j < composition.length; j++)  {
+      var otherRegion = composition[j].UIregion;
+      var otherVec = $V([otherRegion[0],-otherRegion[1]]);
+      var u2OtherVec = otherVec.subtract(parentVec).toUnitVector();
+      var r = parentVec.distanceFrom(otherVec);
+      if (r > 0)  {
+        force = force.add(u2OtherVec.x(-30000*(1/Math.pow(r,2))));
       }
+    }
+    // Potential Well
+    c = document.getElementById("control_surface");
+    centerVec = $V([c.width/2,-c.height/2]);
+    force = force.add(centerVec.subtract(parentVec).x(0.01));
+    // Damping
+    var vel = $V(composition[i].velocity);
+    vel.setElements([vel.e(1), -vel.e(2)]);
+    force = force.add(vel.x(-0.2));
+    // Static Friction
+    if (force.modulus() > 0.00000001) {
+        force = force.add(force.toUnitVector().x(-0.00000001));
+    } else  {
+        force = force.x(0);
+    }
 
-      if (force.modulus() > 0)  {
+    if (force.modulus() > 0)  {
+
       composition[i].velocity[0] = composition[i].velocity[0]+force.e(1);
       composition[i].velocity[1] = composition[i].velocity[1]-force.e(2);
       composition[i].UIregion[0] = Math.round(composition[i].UIregion[0]
-                                   + composition[i].velocity[0]);
+                                 + composition[i].velocity[0]);
       composition[i].UIregion[1] = Math.round((composition[i].UIregion[1]
-                                   + composition[i].velocity[1]));
+                                 + composition[i].velocity[1]));
     }
   }
 
