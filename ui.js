@@ -38,7 +38,10 @@ function startControl(loadedComposition) {
         startLoc[1] = composition[selectedRegion].UIregion[1];
       }
     }
-    if (inRegion(StartSection.UIregion),e) {
+    if (inRegion(StartSection.UIregion,e)) {
+      touchDown = true;
+      startLoc[0] = StartSection.UIregion[0];
+      startLoc[1] = StartSection.UIregion[1];
     }
   }, false);
 
@@ -54,22 +57,38 @@ function startControl(loadedComposition) {
     var childSet = false;
     dragging = false;
     touchDown = false;
-    if (inRegion(composition[selectedRegion].UIregion, e)) {
-      //console.log("click");
-      queueTrack(selectedRegion);
+    if (startLoc[0] != StartSection.UIregion[0] &&
+        startLoc[1] != StartSection.UIregion[1]) {
+      if (inRegion(composition[selectedRegion].UIregion, e)) {
+        //console.log("click");
+        queueTrack(selectedRegion);
 
-    } else {
-      for (var i = 0; i < composition.length; i++) {
-        if (inRegion(composition[i].UIregion, e)) {
-          connectChild(selectedRegion, i);
-          childSet = true;
+      } else {
+        for (var i = 0; i < composition.length; i++) {
+          if (inRegion(composition[i].UIregion, e)) {
+            connectChild(selectedRegion, i);
+            childSet = true;
+          }
+        }
+        if (!childSet) {
+          nextTrackIndex = null;
+          resetSectionColor();
         }
       }
-      if (!childSet) {
-        nextTrackIndex = null;
-        resetSectionColor();
+    } else  {
+      for (var i = 0; i < composition.length; i++) {
+        if (inRegion(composition[i].UIregion, e)) {
+          StartSection.children[0] = i;
+          childSet = true;
+        }
+        if (!childSet) {
+          nextTrackIndex = null;
+          //resetSectionColor();
+        }
+
       }
     }
+
   }, false);
 
 
@@ -148,11 +167,26 @@ function runPhysics() {
     }
     // Drag spring
     if (dragging) {
-      if (i == selectedRegion) {
-        var childVec = $V([dragEnd[0],-dragEnd[1]]);
+      if (startLoc[0] != StartSection.UIregion[0] &&
+        startLoc[1] != StartSection.UIregion[1]) {
+        if (i == selectedRegion) {
+          var childVec = $V([dragEnd[0],-dragEnd[1]]);
+          var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
+          // Hooke's Law
+          var k = 0.005;
+          var x = parentVec.distanceFrom(childVec) - 100;
+          force = force.add(u2ChildVec.x(k*x));
+        }
+      }
+    }
+    // Start Section spring
+    for (var j = 0; j < StartSection.children.length; j++)  {
+      if (i == StartSection.children[j])  {
+        var childRegion = StartSection.UIregion;
+        var childVec = $V([childRegion[0],-childRegion[1]]);
         var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
         // Hooke's Law
-        var k = 0.005;
+        var k = 0.0001;
         var x = parentVec.distanceFrom(childVec) - 100;
         force = force.add(u2ChildVec.x(k*x));
       }
@@ -171,10 +205,11 @@ function runPhysics() {
     c = document.getElementById("control_surface");
     poleVec = $V([c.width/2,-c.height/2]);
     force = force.add(poleVec.subtract(parentVec).x(0.01));
+
     // Damping
     var vel = $V(composition[i].velocity);
     vel.setElements([vel.e(1), -vel.e(2)]);
-    force = force.add(vel.x(-0.1));
+    force = force.add(vel.x(-0.2));
     // Static Friction
     if (force.modulus() > 0.00001) {
         force = force.add(force.toUnitVector().x(-0.00001));
@@ -222,8 +257,11 @@ function animate() {
 
   // draw stuff
   if (dragging) {
-    startLoc[0] = composition[selectedRegion].UIregion[0];
-    startLoc[1] = composition[selectedRegion].UIregion[1];
+    if (startLoc[0] != StartSection.UIregion[0] &&
+        startLoc[1] != StartSection.UIregion[1]) {
+      startLoc[0] = composition[selectedRegion].UIregion[0];
+      startLoc[1] = composition[selectedRegion].UIregion[1];
+    }
     //console.log(startLoc);
     ctx.lineWidth = 5;
     ctx.beginPath();
@@ -233,13 +271,45 @@ function animate() {
     ctx.stroke();
 
   }
+  StartSection.color = "rgb(100,200,100)";
   ctx.beginPath();
   ctx.arc(StartSection.UIregion[0],
     StartSection.UIregion[1],
     50, 0, Math.PI * 2, false); // Draw a circle
   ctx.closePath();
-  ctx.fillStyle = "rgb(100,200,100)";
+  ctx.fillStyle = StartSection.color;
   ctx.fill();
+  for (var i = 0; i < StartSection.children.length; i++)  {
+    var region = StartSection.UIregion;
+    var childRegion = composition[StartSection.children[i]].UIregion;
+    ctx.lineWidth = 5;
+    // Convert to cartesian coordinates
+    var childVec = $V([childRegion[0],-childRegion[1]]);
+    var parentVec = $V([region[0],-region[1]]);
+    var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
+    var linkVec = u2ChildVec.x((childVec.distanceFrom(parentVec)-100));
+    var R = Matrix.Rotation(0.1).elements;
+    var nodeVec = u2ChildVec.x(50).elements;
+    var linkstart = $V([nodeVec[0]*R[0][0]+nodeVec[1]*R[0][1],
+                        nodeVec[0]*R[1][0]+nodeVec[1]*R[1][1]]);
+    linkstart = linkstart.add(parentVec);
+    linkstart = linkstart.round();
+    linkVec = linkVec.round();
+    ctx.beginPath();
+    ctx.moveTo(linkstart.e(1), -linkstart.e(2));
+    ctx.lineTo(linkstart.add(linkVec).e(1), -linkstart.add(linkVec).e(2));
+    ctx.strokeStyle = ("rgb(" + strokeWeight + ",0,"
+                      + (180 - strokeWeight) + ")");
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(linkstart.e(1),
+            -linkstart.e(2),
+            5, 0, Math.PI * 2, false); // Draw a circle
+    ctx.closePath();
+    ctx.fillStyle = StartSection.color;
+    ctx.fill();
+
+  }
   ctx.beginPath();
   ctx.arc(EndSection.UIregion[0],
     EndSection.UIregion[1],
