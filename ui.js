@@ -11,6 +11,7 @@ function Section(UIregion, soundIndex, name) {
   this.children = new Array();
   this.weights = new Array();
   this.weightTotal = 0;
+  this.velocity = [0,0];
 }
 
 
@@ -102,12 +103,55 @@ function updateSectionRegion(e) {
 }
 
 function inRegion(region, e) {
-  if ((e.pageX > region[0] && e.pageX < region[2] + region[0]) &&
-    (e.pageY > region[1] && e.pageY < region[3] + region[1])) {
+  var d = Math.sqrt(Math.pow(e.pageX - region[0],2)
+          + Math.pow(e.pageY - region[1],2));
+  console.log(d);
+  if (d < 50 ) {
     return true;
   } else {
     return false;
   }
+}
+
+function runPhysics() {
+  for (var i = 0; i < composition.length; i++) {
+    var region = composition[i].UIregion;
+    var force = $V([0,0]);
+    for (var j = 0; j < composition[i].children.length; j++) {
+      var childRegion = composition[composition[i].children[j]].UIregion;
+      var strokeWeight = composition[i].weights[j] /
+        composition[i].weightTotal;
+      strokeWeight = Math.round(strokeWeight * 180);
+      // Convert to Cartesian
+      var childVec = $V([childRegion[0],-childRegion[1]]);
+      var parentVec = $V([region[0],-region[1]]);
+      var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
+      // Hooke's Law
+      var k = 0.001*strokeWeight;
+      var x = parentVec.distanceFrom(childVec) - 200;
+      force = force.add(u2ChildVec.x(k*x));
+    }
+      // Damping (replace's friction?)
+      var vel = $V(composition[i].velocity);
+      vel.setElements([vel.e(1), -vel.e(2)]);
+      force = force.add(vel.x(-0.1));
+      // Static Friction
+      if (force.modulus() > 0.01) {
+          force = force.add(force.toUnitVector().x(-0.01));
+      } else  {
+          force = force.x(0);
+      }
+
+      if (force.modulus() > 0)  {
+      composition[i].velocity[0] = composition[i].velocity[0]+force.e(1);
+      composition[i].velocity[1] = composition[i].velocity[1]-force.e(2);
+      composition[i].UIregion[0] = Math.round(composition[i].UIregion[0]
+                                   + composition[i].velocity[0]);
+      composition[i].UIregion[1] = Math.round((composition[i].UIregion[1]
+                                   + composition[i].velocity[1]));
+    }
+  }
+
 }
 
 
@@ -117,7 +161,7 @@ window.requestAnimFrame = (function(callback) {
     window.mozRequestAnimationFrame ||
     window.oRequestAnimationFrame ||
     window.msRequestAnimationFrame || function(callback) {
-    window.setTimeout(callback, 1000 / 20);
+    window.setTimeout(callback, 1000 / 30);
   };
 })();
 
@@ -127,6 +171,7 @@ function animate() {
   ctx = c.getContext("2d");
 
   // update
+  runPhysics();
 
   // clear
   ctx.clearRect(0, 0, c.width, c.height);
@@ -137,19 +182,18 @@ function animate() {
   // draw stuff
   for (var i = 0; i < composition.length; i++) {
     var region = composition[i].UIregion;
+    ctx.beginPath();
+    ctx.arc(region[0],
+      region[1],
+      50, 0, Math.PI * 2, false); // Draw a circle
+    ctx.closePath();
     ctx.fillStyle = composition[i].color;
-    ctx.fillRect(region[0] + 25, region[1], region[2] - 50, region[3]);
-    ctx.fillStyle = "rgb(150,150,150)";
+    ctx.fill();
+
     ctx.font = "14pt Calibri";
-    ctx.fillText(composition[i].name, region[0] + 30, region[1] + 40);
     ctx.fillStyle = "rgb(75,75,75)";
-    ctx.fillRect(region[0], region[1] + 15, 25, region[3] - 30);
-    ctx.fillRect(
-      region[0] + region[2] - 25,
-      region[1] + 15,
-      25,
-      region[3] - 30);
-  }
+    ctx.fillText(composition[i].name, region[0] - 40, region[1] + 5);
+    }
 
   for (var i = 0; i < composition.length; i++) {
     var region = composition[i].UIregion;
@@ -159,19 +203,38 @@ function animate() {
         composition[i].weightTotal;
       strokeWeight = Math.round(strokeWeight * 180);
       ctx.lineWidth = 5;
+      // Convert to cartesian coordinates
+      var childVec = $V([childRegion[0],-childRegion[1]]);
+      var parentVec = $V([region[0],-region[1]]);
+      var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
+      var linkVec = u2ChildVec.x((childVec.distanceFrom(parentVec)-100));
+      var R = Matrix.Rotation(0.1).elements;
+      var nodeVec = u2ChildVec.x(50).elements;
+      var linkstart = $V([nodeVec[0]*R[0][0]+nodeVec[1]*R[0][1],
+                          nodeVec[0]*R[1][0]+nodeVec[1]*R[1][1]]);
+      linkstart = linkstart.add(parentVec);
+      linkstart = linkstart.round();
+      linkVec = linkVec.round();
       ctx.beginPath();
-      ctx.moveTo(childRegion[0] + 12, childRegion[1] + 25);
-      ctx.lineTo(region[0] + region[2] - 12, region[1] + 25);
+      ctx.moveTo(linkstart.e(1), -linkstart.e(2));
+      ctx.lineTo(linkstart.add(linkVec).e(1), -linkstart.add(linkVec).e(2));
       ctx.strokeStyle = ("rgb(" + strokeWeight + ",0,"
-                        + (180 - strokeWeight) + ")";
+                        + (180 - strokeWeight) + ")");
       ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(linkstart.e(1),
+              -linkstart.e(2),
+              5, 0, Math.PI * 2, false); // Draw a circle
+      ctx.closePath();
+      ctx.fillStyle = composition[i].color;
+      ctx.fill();
+      }
+
     }
 
+
+    // request new frame
+    requestAnimFrame(function() {
+      animate();
+    });
   }
-
-
-  // request new frame
-  requestAnimFrame(function() {
-    animate();
-  });
-}

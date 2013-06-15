@@ -11,7 +11,8 @@
         "color": "rgb(50,50,50)",
         "children": [],
         "weights": [],
-        "weightTotal": 0
+        "weightTotal": 0,
+	"velocity": [0,0]
     },
     {
         "UIregion": [
@@ -25,7 +26,8 @@
         "color": "rgb(50,50,50)",
         "children": [],
         "weights": [],
-        "weightTotal": 0
+        "weightTotal": 0,
+	"velocity": [0,0]
     },
     {
         "UIregion": [
@@ -39,6 +41,7 @@
         "color": "rgb(50,50,50)",
         "children": [],
         "weights": [],
-        "weightTotal": 0
+        "weightTotal": 0,
+	"velocity": [0,0]
     }
 ]
