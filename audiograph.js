@@ -41,9 +41,6 @@ function saveComposition()  {
     xhr.send(txt);
   }
   sendText(jsonStr);
-}
-
-sendTextNew('test string');
   return jsonStr;
 }
 
