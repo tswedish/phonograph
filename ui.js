@@ -6,6 +6,8 @@ var dragging = false;
 var dragEnd = [0,0];
 var startLoc = [0,0];
 var touchDown = false;
+var StartSection = new Section([100,300,200,200]);
+var EndSection = new Section([900,300,200,200]);
 
 function Section(UIregion, soundIndex, name) {
   this.UIregion = UIregion;
@@ -32,8 +34,11 @@ function startControl(loadedComposition) {
       if (inRegion(composition[i].UIregion, e)) {
         selectedRegion = i;
         touchDown = true;
-        startLoc = [e.pageX,e.pageY];
+        startLoc[0] = composition[selectedRegion].UIregion[0];
+        startLoc[1] = composition[selectedRegion].UIregion[1];
       }
+    }
+    if (inRegion(StartSection.UIregion),e) {
     }
   }, false);
 
@@ -137,9 +142,20 @@ function runPhysics() {
       var childVec = $V([childRegion[0],-childRegion[1]]);
       var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
       // Hooke's Law
-      var k = 0.0001*strokeWeight;
+      var k = 0.001*strokeWeight;
       var x = parentVec.distanceFrom(childVec) - 200;
       force = force.add(u2ChildVec.x(k*x));
+    }
+    // Drag spring
+    if (dragging) {
+      if (i == selectedRegion) {
+        var childVec = $V([dragEnd[0],-dragEnd[1]]);
+        var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
+        // Hooke's Law
+        var k = 0.005;
+        var x = parentVec.distanceFrom(childVec) - 100;
+        force = force.add(u2ChildVec.x(k*x));
+      }
     }
     // Charge
     for (var j = 0; j < composition.length; j++)  {
@@ -153,15 +169,15 @@ function runPhysics() {
     }
     // Potential Well
     c = document.getElementById("control_surface");
-    centerVec = $V([c.width/2,-c.height/2]);
-    force = force.add(centerVec.subtract(parentVec).x(0.01));
+    poleVec = $V([c.width/2,-c.height/2]);
+    force = force.add(poleVec.subtract(parentVec).x(0.01));
     // Damping
     var vel = $V(composition[i].velocity);
     vel.setElements([vel.e(1), -vel.e(2)]);
-    force = force.add(vel.x(-0.2));
+    force = force.add(vel.x(-0.1));
     // Static Friction
-    if (force.modulus() > 0.00000001) {
-        force = force.add(force.toUnitVector().x(-0.00000001));
+    if (force.modulus() > 0.00001) {
+        force = force.add(force.toUnitVector().x(-0.00001));
     } else  {
         force = force.x(0);
     }
@@ -206,6 +222,8 @@ function animate() {
 
   // draw stuff
   if (dragging) {
+    startLoc[0] = composition[selectedRegion].UIregion[0];
+    startLoc[1] = composition[selectedRegion].UIregion[1];
     //console.log(startLoc);
     ctx.lineWidth = 5;
     ctx.beginPath();
@@ -215,6 +233,22 @@ function animate() {
     ctx.stroke();
 
   }
+  ctx.beginPath();
+  ctx.arc(StartSection.UIregion[0],
+    StartSection.UIregion[1],
+    50, 0, Math.PI * 2, false); // Draw a circle
+  ctx.closePath();
+  ctx.fillStyle = "rgb(100,200,100)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(EndSection.UIregion[0],
+    EndSection.UIregion[1],
+    50, 0, Math.PI * 2, false); // Draw a circle
+  ctx.closePath();
+  ctx.fillStyle = "rgb(200,100,100)";
+  ctx.fill();
+
+
   for (var i = 0; i < composition.length; i++) {
     var region = composition[i].UIregion;
     ctx.beginPath();
