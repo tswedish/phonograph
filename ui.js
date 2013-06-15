@@ -2,6 +2,10 @@ var c;
 var ctx;
 var startdown = false;
 var selectedRegion = 0;
+var dragging = false;
+var dragEnd = [0,0];
+var startLoc = [0,0];
+var touchDown = false;
 
 function Section(UIregion, soundIndex, name) {
   this.UIregion = UIregion;
@@ -27,18 +31,26 @@ function startControl(loadedComposition) {
     for (var i = 0; i < composition.length; i++) {
       if (inRegion(composition[i].UIregion, e)) {
         selectedRegion = i;
+        touchDown = true;
+        startLoc = [e.pageX,e.pageY];
       }
     }
   }, false);
-  /*
+
   c.addEventListener("mousemove", function(e){
-    //console.log('mouse move');
+    if (touchDown) {
+      dragging = true;
+      dragEnd = [e.pageX,e.pageY];
+      //console.log(dragEnd);
+    }
   }, false);
-  */
+
   c.addEventListener("mouseup", function(e) {
     var childSet = false;
+    dragging = false;
+    touchDown = false;
     if (inRegion(composition[selectedRegion].UIregion, e)) {
-      console.log("click");
+      //console.log("click");
       queueTrack(selectedRegion);
 
     } else {
@@ -53,8 +65,6 @@ function startControl(loadedComposition) {
         resetSectionColor();
       }
     }
-    //setRegion = null;
-    dragged = true;
   }, false);
 
 
@@ -105,7 +115,7 @@ function updateSectionRegion(e) {
 function inRegion(region, e) {
   var d = Math.sqrt(Math.pow(e.pageX - region[0],2)
           + Math.pow(e.pageY - region[1],2));
-  console.log(d);
+  //console.log(d);
   if (d < 50 ) {
     return true;
   } else {
@@ -195,6 +205,16 @@ function animate() {
 
 
   // draw stuff
+  if (dragging) {
+    //console.log(startLoc);
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(startLoc[0], startLoc[1]);
+    ctx.lineTo(dragEnd[0], dragEnd[1]);
+    ctx.strokeStyle = "rgb(200,0,0)";
+    ctx.stroke();
+
+  }
   for (var i = 0; i < composition.length; i++) {
     var region = composition[i].UIregion;
     ctx.beginPath();
