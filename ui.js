@@ -76,17 +76,21 @@ function startControl(loadedComposition) {
         }
       }
     } else  {
-      for (var i = 0; i < composition.length; i++) {
-        if (inRegion(composition[i].UIregion, e)) {
-          StartSection.children[0] = i;
-          childSet = true;
-        }
-        if (!childSet) {
-          nextTrackIndex = null;
-          //resetSectionColor();
-        }
+        if (inRegion(StartSection.UIregion,e))  {
+          queueTrack(StartSection.children[0]);
+        } else  {
+          for (var i = 0; i < composition.length; i++) {
+            if (inRegion(composition[i].UIregion, e)) {
+              StartSection.children[0] = i;
+              childSet = true;
+            }
+            if (!childSet) {
+              nextTrackIndex = null;
+              //resetSectionColor();
+            }
 
-      }
+          }
+        }
     }
 
   }, false);
@@ -194,7 +198,7 @@ function runPhysics() {
       var childVec = $V([childRegion[0],-childRegion[1]]);
       var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
       // Hooke's Law
-      var k = 0.001*strokeWeight;
+      var k = 0.0001*strokeWeight;
       var x = parentVec.distanceFrom(childVec) - 200;
       force = force.add(u2ChildVec.x(k*x));
     }
@@ -206,7 +210,7 @@ function runPhysics() {
           var childVec = $V([dragEnd[0],-dragEnd[1]]);
           var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
           // Hooke's Law
-          var k = 0.005;
+          var k = 0.05;
           var x = parentVec.distanceFrom(childVec) - 100;
           force = force.add(u2ChildVec.x(k*x));
         }
@@ -219,7 +223,7 @@ function runPhysics() {
         var childVec = $V([childRegion[0],-childRegion[1]]);
         var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
         // Hooke's Law
-        var k = 0.0001;
+        var k = 0.001;
         var x = parentVec.distanceFrom(childVec) - 100;
         force = force.add(u2ChildVec.x(k*x));
       }
@@ -242,7 +246,7 @@ function runPhysics() {
     // Damping
     var vel = $V(composition[i].velocity);
     vel.setElements([vel.e(1), -vel.e(2)]);
-    force = force.add(vel.x(-0.2));
+    force = force.add(vel.x(-0.3));
     // Static Friction
     if (force.modulus() > 0.00001) {
         force = force.add(force.toUnitVector().x(-0.00001));

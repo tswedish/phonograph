@@ -4,7 +4,7 @@ var filename = new Array();
 var domainPrefix = '';
 var compositionFile = domainPrefix + 'composition.json';
 
-var trackBufferList;
+var trackBufferList = new Array();
 var composition = new Array();
 
 window.onload = init;
@@ -21,10 +21,30 @@ function init() {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   context = new AudioContext();
 
-  compositionLoader = new CompositionLoader(finishedLoadingComposition);
-  compositionLoader.load(compositionFile);
+  //compositionLoader = new CompositionLoader(finishedLoadingComposition);
+  //compositionLoader.load(compositionFile);
+  startControl(false);
 
+}
 
+function saveComposition()  {
+  var jsonStr = JSON.stringify(composition,null,2);
+  function sendText(txt) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/savecomposition', true);
+    xhr.responseType = 'text';
+    xhr.onload = function(e) {
+      if (this.status == 200) {
+        console.log(this.response);
+      }
+    };
+    xhr.send(txt);
+  }
+  sendText(jsonStr);
+}
+
+sendTextNew('test string');
+  return jsonStr;
 }
 
 function finishedLoadingSound(bufferList) {
