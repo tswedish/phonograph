@@ -30,7 +30,6 @@ function init() {
 function finishedLoadingSound(bufferList) {
   console.log('loadedbuffers');
   trackBufferList = bufferList;
-  currBuffer = trackBufferList[0];
   startControl(true);
 }
 
@@ -54,6 +53,7 @@ function finishedLoadingComposition(composer) {
 
 }
 
+
 //var filter = context.createBiquadFilter();
 //filter.type = 0;  // In this case it's a lowshelf filter
 //filter.frequency.value = 440;
@@ -61,7 +61,6 @@ function finishedLoadingComposition(composer) {
 //filter.connect(context.destination);
 
 function playTrack(buffer) {
-  console.log('playing next track');
   var source = context.createBufferSource();
   source.buffer = buffer;
   source.connect(context.destination);
@@ -71,7 +70,6 @@ function playTrack(buffer) {
   resetSectionColor();
   playing = true;
   var timer = setTimeout(function() {
-    console.log('playback finished');
     playing = false;
     composition[currentTrackIndex].color = "rgb(50,50,50)";
     playNextinQueue();
@@ -81,8 +79,8 @@ function playTrack(buffer) {
 function rollNextTrack() {
   var roll = Math.ceil(Math.random() *
     (composition[currentTrackIndex].weightTotal - 1));
-  console.log("weightTotal:" + composition[currentTrackIndex].weightTotal);
-  console.log("rolled: " + roll);
+  //console.log("weightTotal:" + composition[currentTrackIndex].weightTotal);
+  //console.log("rolled: " + roll);
   for (var i = 0; i < composition[currentTrackIndex].weights.length; i++) {
     if (roll < composition[currentTrackIndex].weights[i]) {
       return composition[currentTrackIndex].children[i];
@@ -90,7 +88,7 @@ function rollNextTrack() {
       roll = roll - composition[currentTrackIndex].weights[i];
     }
   }
-  console.log("No roll, returning null");
+  //console.log("No roll, returning null");
   return null;
 }
 
@@ -103,15 +101,15 @@ function playNextinQueue() {
 function queueTrack(newTrackIndex) {
   nextTrackIndex = newTrackIndex;
   resetSectionColor();
-  console.log('queued next track');
+  //console.log('queued next track');
   if (!playing) {
     playNextinQueue();
   }
 }
 
 function resetSectionColor() {
-  console.log(currentTrackIndex);
-  console.log(nextTrackIndex);
+  //console.log(currentTrackIndex);
+  //console.log(nextTrackIndex);
   for (var i = 0; i < composition.length; i++) {
     if (i != nextTrackIndex && i != currentTrackIndex) {
       composition[i].color = "rgb(50,50,50)";

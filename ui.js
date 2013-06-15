@@ -94,6 +94,39 @@ function startControl(loadedComposition) {
 
   animate();
 
+  var doc = document.documentElement;
+  doc.ondragover = function () { this.className = 'hover'; return false; };
+  doc.ondragend = function () { this.className = ''; return false; };
+  doc.ondrop = function (event) {
+    event.preventDefault && event.preventDefault();
+    this.className = '';
+    console.log("file dropped");
+    // now do something with:
+    var files = event.dataTransfer.files;
+    for (var i = 0; i < files.length; i++)  {
+      (function(file) {
+        var name = file.name;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          context.decodeAudioData(
+              e.target.result, function(buffer) {
+                trackBufferList[trackBufferList.length] = buffer;
+                composition[composition.length] = new Section (
+                  [Math.round(Math.random()*100+200),200,200,200],
+                  trackBufferList.length-1,
+                  name
+                  );
+              }, function (err) { console.error(err) }
+          );
+        };
+        reader.readAsArrayBuffer(file);})
+      (files[i]);
+    }
+
+    return false;
+  };
+
+
 
 }
 
