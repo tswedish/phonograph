@@ -223,7 +223,7 @@ function runPhysics() {
         var childVec = $V([childRegion[0],-childRegion[1]]);
         var u2ChildVec = childVec.subtract(parentVec).toUnitVector();
         // Hooke's Law
-        var k = 0.001;
+        var k = 0.0005;
         var x = parentVec.distanceFrom(childVec) - 100;
         force = force.add(u2ChildVec.x(k*x));
       }
