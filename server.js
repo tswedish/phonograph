@@ -11,9 +11,9 @@ http.createServer(function(request, response) {
   var uri = url.parse(request.url).pathname
     , filename = path.join(process.cwd(), uri);
 
-  var data = JSON.stringify(request.post);
   if(uri=='/savecomposition') {
      postRequest(request, response, function() {
+        var data = JSON.stringify(response.post);
         fs.writeFile('./compositions/test.json',data);
         console.log(data);
         response.writeHead(200, "OK", {'Content-Type': 'text/plain'});
@@ -55,6 +55,7 @@ function postRequest(request, response, callback) {
 
     if(request.method == 'POST') {
         request.on('data', function(data) {
+            //console.log(data);
             queryData += data;
             if(queryData.length > 1e6) {
                 queryData = "";

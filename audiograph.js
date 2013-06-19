@@ -28,6 +28,7 @@ function init() {
 }
 
 function saveComposition()  {
+  var JSONcomp = JSON.stringify(composition);
   function sendText(txt) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', '/savecomposition', true);
@@ -39,7 +40,7 @@ function saveComposition()  {
     };
     xhr.send(txt);
   }
-  sendText(composition);
+  sendText(JSONcomp);
 }
 
 function finishedLoadingSound(bufferList) {
