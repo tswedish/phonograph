@@ -1,7 +1,15 @@
+Phonograph
+========
+
+- It's a graph (network) of connections between sounds. 
+- Manipulate the structure of music as you listen to it. 
+- Listener and composer united.
+
+
 Sulcus, Musicum
 ========
 
-[TRY IT!](http://sulcusmusicum.aws.af.cm/)
+[TRY IT!](http://phonograph.aws.af.cm/)
 
 Quickstart:
 
