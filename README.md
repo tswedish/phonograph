@@ -12,6 +12,7 @@ Sulcus, Musicum
 ========
 Quickstart:
 
+ - Drag and drop a few audio files onto the browser window.
  - Click a node to begin playback, click another to set at next track queue.
  - Click and drag to another node to make a link. Drag to the same node again to
    increase the link strength. Once a node is linked, it will auto-queue in that
@@ -24,6 +25,6 @@ Quickstart:
   - Visualize the music and interact with the music, engage in conversation.
 
 
-Seriously, maybe I'm a PaaS knurd
-[AppFog](https://www.appfog.com/)
+(Seriously, maybe I'm a PaaS knurd
+[AppFog](https://www.appfog.com/))
 
