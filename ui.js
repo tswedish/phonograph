@@ -1,15 +1,18 @@
-var c;
-var ctx;
+var c = document.getElementById("control_surface");
+var ctx = c.getContext("2d");
+
 var startdown = false;
 var selectedRegion = 0;
 var dragging = false;
 var dragEnd = [0,0];
 var startLoc = [0,0];
 var touchDown = false;
-var StartSection = new Section([100,300,200,200]);
-var EndSection = new Section([900,300,200,200]);
+var StartSection = new Section([100,500,200,200]);
+var EndSection = new Section([900,500,200,200]);
 
 function Section(UIregion, soundIndex, name) {
+  UIregion[0] = UIregion[0]*0.001*ctx.canvas.width;
+  UIregion[1] = UIregion[1]*0.001*ctx.canvas.height;
   this.UIregion = UIregion;
   this.soundIndex = soundIndex;
   this.name = name;
@@ -278,10 +281,47 @@ window.requestAnimFrame = (function(callback) {
   };
 })();
 
+function drawMultilineText(el,ctx,x,y){
+
+     // Creates an array where the <br/> tag splits the values.
+     function toMultiLine(text){
+      var textArr = new Array();
+      text = text.replace(/\n\r?/g, '<br/>');
+      textArr = text.split("<br/>");
+      return textArr;
+     }
+
+
+      // set context and formatting
+      ctx.font = "14pt Calibri";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = "rgb(75,75,75)";
+
+      // prepare textarea value to be drawn as multiline text.
+      var textval = document.getElementById(el).value;
+      var textvalArr = toMultiLine(textval);
+      var linespacing = 25;
+      var startX = x;
+      var startY = y;
+
+      // draw each line on canvas.
+      y = startY;
+      for(var i = 0; i < textvalArr.length; i++){
+          ctx.fillText(textvalArr[i], startX, y);
+          y += linespacing;
+      }
+}
+
+
 function animate() {
 
-  c = document.getElementById("control_surface");
-  ctx = c.getContext("2d");
+  ctx.canvas.width  = window.innerWidth;
+  ctx.canvas.height = window.innerHeight;
+  StartSection.UIregion[0] = ctx.canvas.width*0.1;
+  StartSection.UIregion[1] = ctx.canvas.height*0.5;
+  EndSection.UIregion[0] = ctx.canvas.width*0.9;
+  EndSection.UIregion[1] = ctx.canvas.height*0.5;
 
   // update
   runPhysics();
@@ -291,6 +331,18 @@ function animate() {
   ctx.fillStyle = "rgb(100,100,100)";
   ctx.fillRect(0, 0, c.width, c.height);
 
+
+  // Title
+  ctx.font = "74pt Calibri";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "rgb(75,75,75)";
+  ctx.fillText("PhonoGraph", 50, 25);
+
+  // Instruction text
+  drawMultilineText("instructions",ctx,150,150)
+  // Info text
+  drawMultilineText("info",ctx,ctx.canvas.width*0.7,ctx.canvas.height*0.8)
 
   // draw stuff
   if (dragging) {

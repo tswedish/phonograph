@@ -8,9 +8,16 @@
   </head>
 
   <body>
-    <div><button id=load>load</button><div id=loadmenu></div></div>
-    <canvas id="control_surface" width="1000" height="700"></canvas>
+    <!--<div><button id=load>load</button><div id=loadmenu></div></div>-->
+    <canvas id="control_surface" style="position: absolute; top: 0px; left: 0px;">
+    <textarea id="instructions" cols="30" rows="5">Drag and drop an audio file from your computer onto the browser window.<br/>Click a node to start playing.<br/>Click and drag to connect nodes.<br/>The graph is your playground!
+      </textarea>
+      <textarea id="info" cols="30" rows="5">Designed by<br/>Tristan Swedish<br/>www.tswedish.com
+      </textarea>
+
+    </canvas>
     <script src="ui.js"></script>
+
   </body>
 
 </html>

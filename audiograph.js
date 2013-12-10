@@ -21,8 +21,8 @@ function init() {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   context = new AudioContext();
 
-  //compositionLoader = new CompositionLoader(finishedLoadingComposition);
-  //compositionLoader.load(compositionFile);
+  compositionLoader = new CompositionLoader(finishedLoadingComposition);
+  compositionLoader.load(compositionFile);
   startControl(false);
 
 }
@@ -41,6 +41,7 @@ function saveComposition()  {
     xhr.send(txt);
   }
   sendText(JSONcomp);
+  console.log(JSONcomp);
 }
 
 function finishedLoadingSound(bufferList) {
